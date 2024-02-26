@@ -1,0 +1,128 @@
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sign Up</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+        <style>
+            body{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                width: 100vw;
+                margin: 0;
+            }
+        </style>
+    </head>
+    
+    <body>
+    
+        <div class="mb-5">
+            <h3 class="mb-3">Login</h3>
+            <input type="text" placeholder="Username" id="userInp" class="form-control mb3">
+            <input type="password" placeholder="Password" id="passInp" class="form-control mb3">
+            <button type="text" id="sub_btn" class="btn w-100 btn-outline-primary mb-3">Login</button>
+            <div class="custom-control custom-switch mb-3">
+                <input type="checkbox" class="custom-control-input" id="customSwitch1">
+                <label class="custom-control-label" for="customSwitch1">Keep Me Logged In</label>
+              </div>
+            <a href="register.html" class="badge badge-secondary py-1 w-100">Want to Create A New Account?</a>
+        </div>
+    
+        <script type="module">
+            // Firebase Config
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/9.16.0/firebase-app.js";
+    
+            const firebaseConfig = {
+              apiKey: "AIzaSyD0r3IIypTYDiQ6-k-1fGh1SnyUO-SzVyw",
+              authDomain: "try99-70550.firebaseapp.com",
+              databaseURL: "https://try99-70550-default-rtdb.firebaseio.com",
+              projectId: "try99-70550",
+              storageBucket: "try99-70550.appspot.com",
+              messagingSenderId: "538447613514",
+              appId: "1:538447613514:web:09b27bccf9a1a936faa0b3"
+            };
+    
+            const app = initializeApp(firebaseConfig);
+    
+            import { getDatabase, ref, set, child, get }
+                from "https://www.gstatic.com/firebasejs/9.16.0/firebase-database.js"
+    
+            const db = getDatabase();
+
+            // References
+
+            const username = document.getElementById('userInp');
+            const pass = document.getElementById('passInp');
+            const submit = document.getElementById('sub_btn');
+
+            // Authentication
+
+            function AuthenticateUser(){
+                const dbref = ref(db);
+
+                get(child(dbref, "UsersList/" + username.value)).then((snapshot)=>{
+                    if(snapshot.exists()){
+                        let dbpass = decPass(snapshot.val().password);
+                        if(dbpass == pass.value){
+                            login(snapshot.val());
+                        }
+
+                        else{
+                            alert("User does not exist!");
+                        }
+                    }
+
+                    else{
+                        set(ref(db, "UsersList/" + username.value),
+                        {
+                            fullname: name.value,
+                            email: email.value,
+                            username: username.value,
+                            password: encPass()
+                        })
+                        .then(()=>{
+                            alert("User added successfully!!!");
+                        })
+                        .catch((error)=>{
+                            alert("error"+error);
+                        })
+                    }
+            });
+            }
+
+            // Decrypt process
+
+            function decPass(dbpass){
+                var pass12 = CryptoJS.AES.decrypt(dbpass, pass.value);
+                return pass12.toString(CryptoJS.enc.Utf8);
+            }
+
+            // Login
+
+            function login(user){
+                let keepLoggedIn = document.getElementById('customSwitch1').checked;
+
+                if(!keepLoggedIn){
+                    sessionStorage.setItem('user', JSON.stringify(user));
+                    window.location = "index.html";
+                }
+
+                else{
+                    localStorage.setItem('keepLoggedIn', 'yes');
+                    localStorage.setItem('user', JSON.stringify(user));
+                    window.location = "index.html";
+                }
+            }
+
+            // Assign the event
+
+            submit.addEventListener('click', AuthenticateUser);
+
+          </script>
+    </body>
+    </html>
